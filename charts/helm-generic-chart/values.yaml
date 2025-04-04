@@ -2,7 +2,24 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+nameOverride: ""
+fullnameOverride: ""
+imagePullSecrets: []
+
 replicaCount: 1
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 70
+
+seeder:
+  enabled: false
+  image:
+    repository: sample
+    tag: ""
+  command: []
 
 image:
   repository: nginx
@@ -10,9 +27,18 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+configMapData: {}
+#  APP_NAME: "demo"
+#  APP_ENV_NAME: "production"
+
+existingConfigmaps: {}
+#  - secret-01
+
+secretData: {}
+#  APP_PASSWORD: "YWRtaW4="
+
+existingSecrets: {}
+#  - existing-secret-01
 
 command: {}
 
@@ -23,28 +49,6 @@ commands: []
   #   command:
   #     - yarn run cron:test
 args: {}
-
-env: {}
-  # - name: NORMAL_ENV
-  #   value: test-env
-  # - name: SAMPLE_CONFIG
-  #   configmap:
-  #     name: generic-deployment
-  #     key: SAMPLE_CONFIG
-  # - name: SAMPLE_PASSWORD
-  #   secret:
-  #     name: generic-deployment
-  #     key: SAMPLE_PASSWORD
-
-configMaps:
-  enabled: false
-  data:
-    SAMPLE_CONFIG: "sample-config"
-
-secrets:
-  enabled: false
-  data:
-    SAMPLE_PASSWORD: "sample-secret"
 
 serviceAccount:
   # Specifies whether a service account should be enabled
@@ -60,12 +64,6 @@ serviceAccount:
 podAnnotations: {}
 podLabels: {}
 
-seeder:
-  enabled: false
-  image:
-    repository: sample
-    tag: ""
-  command: []
 
 podSecurityContext: {}
   # fsGroup: 2000
@@ -107,7 +105,7 @@ resources:
     memory: 100Mi
 
 healthCheck:
-  enabled: false
+  enabled: true
   readinessProbe:
     httpGet:
       path: /system/readiness
@@ -129,13 +127,6 @@ healthCheck:
     periodSeconds: 10
     successThreshold: 1
     failureThreshold: 3
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []
@@ -222,3 +213,4 @@ persistentVolume:
   accessModes:
     - ReadWriteOnce
   size: 8Gi
+
