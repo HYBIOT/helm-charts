@@ -94,14 +94,6 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-containerPorts:
-  - containerPort: 80
-    protocol: TCP
-    hostPort: ""
-  # - containerPort: 50051
-  #   protocol: TCP
-  #   hostPort: ""
-
 resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -167,10 +159,8 @@ tolerations: []
 
 affinity: {}
 
-
 services: {}
-  # ClusterIP type
-  # - type: ClusterIP
+  #- type: ClusterIP
   #   annotation: {}
   # - ports:
   #   - name: http-port
@@ -225,10 +215,6 @@ serviceHeadless:
   #     protocol: TCP
   #     port: 8080
   #     targetPort: 8080
-
-service: 
-  type: ClusterIP
-  port: 80
 
 # Additional volumes on the output Deployment definition.
 persistentVolume:

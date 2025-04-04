@@ -49,12 +49,15 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | quote | default "IfNotPresent" }}
-          {{- if .Values.containerPorts }}
           ports:
-            {{- range $key, $value := .Values.containerPorts }}
-            - containerPort: {{ $value.containerPort }}
-              protocol: {{ $value.protocol }}
-              # hostPort: {{ $value.hostPort }}
+          {{- if .Values.services }}
+            {{- $firstService := index .Values.services 0 }}
+            {{- if $firstService.ports }}
+              {{- range $port := $firstService.ports }}
+              - name: {{ $port.name }}
+                containerPort: {{ $port.targetPort }}
+                protocol: {{ $port.protocol | default "TCP" }}
+              {{- end }}
             {{- end }}
           {{- end }}
           {{- if .Values.workingDir }}
