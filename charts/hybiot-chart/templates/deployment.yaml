@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "helm-generic-chart.fullname" . }}
+  name: {{ include "hybiot-chart.fullname" . }}
   labels:
-    {{- include "helm-generic-chart.labels" . | nindent 4 }}
+    {{- include "hybiot-chart.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount | default 1 }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "helm-generic-chart.selectorLabels" . | nindent 6 }}
+      {{- include "hybiot-chart.selectorLabels" . | nindent 6 }}
   strategy:
     # Blue-Green Deployment
     type: RollingUpdate
@@ -24,7 +24,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "helm-generic-chart.labels" . | nindent 8 }}
+        {{- include "hybiot-chart.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -40,7 +40,7 @@ spec:
       hostNetwork: true
       dnsPolicy: {{ .Values.serviceHostNetwork.policy }}
       {{- end }}
-      serviceAccountName: {{ include "helm-generic-chart.serviceAccountName" . }}
+      serviceAccountName: {{ include "hybiot-chart.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -78,7 +78,7 @@ spec:
           envFrom:
             {{- if .Values.configMapData }}
             - configMapRef:
-                name: {{ include "helm-generic-chart.fullname" . }}
+                name: {{ include "hybiot-chart.fullname" . }}
             {{- end }}
             {{- range .Values.existingConfigmaps }}
             - configMapRef:
@@ -86,7 +86,7 @@ spec:
             {{- end }}
             {{- if .Values.secretData }}
             - secretRef:
-                name: {{ include "helm-generic-chart.fullname" . }}
+                name: {{ include "hybiot-chart.fullname" . }}
             {{- end }}
             {{- range .Values.existingSecrets }}
             - secretRef:
@@ -148,10 +148,10 @@ spec:
           image: "{{ .Values.seeder.image.repository }}:{{ .Values.seeder.image.tag | default .Chart.AppVersion }}"
           envFrom:
             - configMapRef:
-                name: {{ include "helm-generic-chart.fullname" . }}
+                name: {{ include "hybiot-chart.fullname" . }}
             {{- if .Values.secretData }}
             - secretRef:
-                name: {{ include "helm-generic-chart.fullname" . }}
+                name: {{ include "hybiot-chart.fullname" . }}
             {{- end }}
             {{- range .Values.existingSecrets }}
             - secretRef:

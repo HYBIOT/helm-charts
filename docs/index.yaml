@@ -3,7 +3,7 @@ entries:
   helm-generic-chart:
   - apiVersion: v2
     appVersion: latest
-    created: "2025-04-04T12:03:10.517656+07:00"
+    created: "2025-04-04T20:44:07.960652+07:00"
     description: A Helm chart for Kubernetes
     digest: 75a84690dffd20110284cae2e4e55f031bfb006e0806562cda0723d81021224f
     name: helm-generic-chart
@@ -11,4 +11,15 @@ entries:
     urls:
     - https://github.com/HYBIOT/helm-charts/helm-generic-chart-0.2.0.tgz
     version: 0.2.0
-generated: "2025-04-04T12:03:10.516591+07:00"
+  hybiot-chart:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2025-04-04T20:44:07.961068+07:00"
+    description: A Helm chart for Kubernetes
+    digest: 7398b031c97772e5622033f7997792b55599648d1168d99f4ce825fd1a5ea4f4
+    name: hybiot-chart
+    type: application
+    urls:
+    - https://github.com/HYBIOT/helm-charts/hybiot-chart-1.0.0.tgz
+    version: 1.0.0
+generated: "2025-04-04T20:44:07.960205+07:00"

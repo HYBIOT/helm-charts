@@ -4,13 +4,13 @@ apiVersion: v1
 kind: Service
 metadata:
   {{- if .name }}
-  name: {{ include "helm-generic-chart.fullname" $ }}-{{ .name }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
+  name: {{ include "hybiot-chart.fullname" $ }}-{{ .name }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
   {{- else }}
-  name: {{ include "helm-generic-chart.fullname" $ }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
+  name: {{ include "hybiot-chart.fullname" $ }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
   {{- end }}
   labels:
-    app.kubernetes.io/name: {{ include "helm-generic-chart.name" $ }}
-    helm.sh/chart: {{ include "helm-generic-chart.chart" $ }}
+    app.kubernetes.io/name: {{ include "hybiot-chart.name" $ }}
+    helm.sh/chart: {{ include "hybiot-chart.chart" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 {{- with .annotations }}
@@ -30,6 +30,6 @@ spec:
       {{- end }}
     {{- end }}
   selector:
-    app.kubernetes.io/name: {{ include "helm-generic-chart.name" $ }}
+    app.kubernetes.io/name: {{ include "hybiot-chart.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
 {{- end }}

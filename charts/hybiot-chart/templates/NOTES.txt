@@ -1,8 +1,8 @@
 {{- if .Values.services }}
   {{- $firstService := index .Values.services 0 }}
-  {{- $fullName := include "helm-generic-chart.fullname" . -}}
+  {{- $fullName := include "hybiot-chart.fullname" . -}}
   {{- $namespace := .Release.Namespace -}}
-  {{- $chartName := include "helm-generic-chart.name" . -}}
+  {{- $chartName := include "hybiot-chart.name" . -}}
   {{- $releaseName := .Release.Name -}}
 
 1. Get the application URL by running these commands:
