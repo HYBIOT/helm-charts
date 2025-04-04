@@ -73,8 +73,10 @@ spec:
             {{- end }}
           {{- end }}
           envFrom:
+            {{- if .Values.configMapData }}
             - configMapRef:
                 name: {{ include "helm-generic-chart.fullname" . }}
+            {{- end }}
             {{- range .Values.existingConfigmaps }}
             - configMapRef:
                 name: {{ . }}

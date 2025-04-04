@@ -60,6 +60,13 @@ serviceAccount:
 podAnnotations: {}
 podLabels: {}
 
+seeder:
+  enabled: false
+  image:
+    repository: sample
+    tag: ""
+  command: []
+
 podSecurityContext: {}
   # fsGroup: 2000
 
@@ -81,7 +88,7 @@ ingress:
     - host: chart-example.local
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -95,23 +102,23 @@ containerPorts:
   #   protocol: TCP
   #   hostPort: ""
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 200Mi
+  requests:
+    cpu: 50m
+    memory: 100Mi
 
 healthCheck:
   enabled: false
   readinessProbe:
     httpGet:
-      path: /ready
+      path: /system/readiness
       port: 80
     initialDelaySeconds: 0
     timeoutSeconds: 1
@@ -123,7 +130,7 @@ healthCheck:
       #   - todo
   livenessProbe:
     httpGet:
-      path: /health
+      path: /system/liveness
       port: 80
     initialDelaySeconds: 0
     timeoutSeconds: 1
@@ -222,3 +229,10 @@ serviceHeadless:
 service: 
   type: ClusterIP
   port: 80
+
+# Additional volumes on the output Deployment definition.
+persistentVolume:
+  enabled: false
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
