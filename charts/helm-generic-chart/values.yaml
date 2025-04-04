@@ -4,7 +4,8 @@
 
 nameOverride: ""
 fullnameOverride: ""
-imagePullSecrets: []
+imagePullSecrets:
+  - bluestone-registry
 
 replicaCount: 1
 autoscaling:
@@ -141,54 +142,47 @@ volumeMounts: []
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
-# nodeSelector: {}
+securityContext: {}
 
-nodeSelector:
-  node-role.kubernetes.io/worker: "true"
-
-tolerations: []
-
-affinity: {}
-
-services: {}
-  #- type: ClusterIP
-  #   annotation: {}
-  # - ports:
-  #   - name: http-port
-  #     protocol: TCP
-  #     port: 80
-  #     targetPort: 80
-  #   - name: grpc-port
-  #     protocol: TCP
-  #     port: 50051
-  #     targetPort: 50051
-  # NodePort type
-  # - type: NodePort
-  #   annotation: {}
-  #   ports:
-  #     - name: sample1-service-port
-  #       protocol: TCP
-  #       port: 80
-  #       targetPort: 80
-  #       nodePort: 32080
-  #     - name: sample2-service-port
-  #       protocol: TCP
-  #       port: 8080
-  #       targetPort: 8080
-  #       nodePort: 32081
-  # LoadBalancer type
-  # - suffixName: "lb"
-  #   type: LoadBalancer
-  #   annotation: {}
-  #   ports:
-  #     - name: sample1-service-port
-  #       protocol: TCP
-  #       port: 80
-  #       targetPort: 80
-  #     - name: sample2-service-port
-  #       protocol: TCP
-  #       port: 8080
-  #       targetPort: 8080
+services:
+  - type: ClusterIP
+    annotation: {}
+    ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+# NodePort type
+# - type: NodePort
+#   annotation: {}
+#   ports:
+#     - name: sample1-service-port
+#       protocol: TCP
+#       port: 80
+#       targetPort: 80
+#       nodePort: 32080
+#     - name: sample2-service-port
+#       protocol: TCP
+#       port: 8080
+#       targetPort: 8080
+#       nodePort: 32081
+# LoadBalancer type
+# - suffixName: "lb"
+#   type: LoadBalancer
+#   annotation: {}
+#   ports:
+#     - name: sample1-service-port
+#       protocol: TCP
+#       port: 80
+#       targetPort: 80
+#     - name: sample2-service-port
+#       protocol: TCP
+#       port: 8080
+#       targetPort: 8080
 
 serviceHostNetwork:
   enabled: false
@@ -213,4 +207,23 @@ persistentVolume:
   accessModes:
     - ReadWriteOnce
   size: 8Gi
+
+nodeSelector: null
+
+# Allow to schedule on spot node
+tolerations:
+    - key: "node-role.kubernetes.io/worker"
+      operator: "Equal"
+      value: "worker"
+      effect: "NoSchedule"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.kubernetes.io/worker
+          operator: In
+          values:
+            - worker
 
