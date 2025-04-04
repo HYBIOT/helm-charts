@@ -1,0 +1,178 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm-generic-chart.fullname" . }}
+  labels:
+    {{- include "helm-generic-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "helm-generic-chart.selectorLabels" . | nindent 6 }}
+  strategy:
+    # Blue-Green Deployment
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "helm-generic-chart.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 30 }}
+      {{- if .Values.serviceHostNetwork.enabled }}
+      hostNetwork: true
+      dnsPolicy: {{ .Values.serviceHostNetwork.policy }}
+      {{- end }}
+      serviceAccountName: {{ include "helm-generic-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote | default "IfNotPresent" }}
+          {{- if .Values.containerPorts }}
+          ports:
+            {{- range $key, $value := .Values.containerPorts }}
+            - containerPort: {{ $value.containerPort }}
+              protocol: {{ $value.protocol }}
+              # hostPort: {{ $value.hostPort }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.workingDir }}
+          workingDir: {{ .Values.workingDir }}
+          {{- end }}
+          {{- if .Values.command }}
+          command:
+            {{- range .Values.command }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.args }}
+          args:
+            {{- range .Values.args }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "helm-generic-chart.fullname" . }}
+            {{- range .Values.existingConfigmaps }}
+            - configMapRef:
+                name: {{ . }}
+            {{- end }}
+            {{- if .Values.secretData }}
+            - secretRef:
+                name: {{ include "helm-generic-chart.fullname" . }}
+            {{- end }}
+            {{- range .Values.existingSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+          {{- if .Values.healthCheck.enabled }}
+          {{- if .Values.healthCheck.readinessProbe }}
+          readinessProbe:
+            {{- if .Values.healthCheck.readinessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.healthCheck.readinessProbe.httpGet.path }}
+              port: {{ .Values.healthCheck.readinessProbe.httpGet.port }}
+            {{- else if .Values.healthCheck.readinessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.healthCheck.readinessProbe.tcpSocket.port }}
+            {{- else if .Values.healthCheck.readinessProbe.exec }}
+            command:
+              {{- range .Values.healthCheck.readinessProbe.exec.command }}
+              - {{ . }}
+              {{- end }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.healthCheck.readinessProbe.initialDelaySeconds | default 0 }}
+            timeoutSeconds: {{ .Values.healthCheck.readinessProbe.timeoutSeconds | default 1 }}
+            periodSeconds: {{ .Values.healthCheck.readinessProbe.periodSeconds | default 10 }}
+            successThreshold: {{ .Values.healthCheck.readinessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ .Values.healthCheck.readinessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          {{- if .Values.healthCheck.livenessProbe }}
+          livenessProbe:
+            {{- if .Values.healthCheck.livenessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.healthCheck.livenessProbe.httpGet.path }}
+              port: {{ .Values.healthCheck.livenessProbe.httpGet.port }}
+            {{- else if .Values.healthCheck.livenessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.healthCheck.livenessProbe.tcpSocket.port }}
+            {{- else if .Values.healthCheck.livenessProbe.exec }}
+            command:
+              {{- range .Values.healthCheck.livenessProbe.exec.command }}
+              - {{ . }}
+              {{- end }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.healthCheck.livenessProbe.initialDelaySeconds | default 0 }}
+            timeoutSeconds: {{ .Values.healthCheck.livenessProbe.timeoutSeconds | default 1 }}
+            periodSeconds: {{ .Values.healthCheck.livenessProbe.periodSeconds | default 10 }}
+            successThreshold: {{ .Values.healthCheck.livenessProbe.successThreshold | default 1 }}
+            failureThreshold: {{ .Values.healthCheck.livenessProbe.failureThreshold | default 3 }}
+          {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.seeder.enabled }}
+      initContainers:
+        - name: seeder
+          image: "{{ .Values.seeder.image.repository }}:{{ .Values.seeder.image.tag | default .Chart.AppVersion }}"
+          envFrom:
+            - configMapRef:
+                name: {{ include "helm-generic-chart.fullname" . }}
+            {{- if .Values.secretData }}
+            - secretRef:
+                name: {{ include "helm-generic-chart.fullname" . }}
+            {{- end }}
+            {{- range .Values.existingSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+            {{- range .Values.initContainerSecrets }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
+        {{- with .Values.seeder.command }}
+          command: {{ .Values.seeder.command }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,35 @@
+{{- range .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if .name }}
+  name: {{ include "helm-generic-chart.fullname" $ }}-{{ .name }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
+  {{- else }}
+  name: {{ include "helm-generic-chart.fullname" $ }}{{- with .suffixName }}-{{ . }}{{- end }}-svc
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "helm-generic-chart.name" $ }}
+    helm.sh/chart: {{ include "helm-generic-chart.chart" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+{{- with .annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  type: {{ .type }}    # NodePort, ClusterIP, LoadBalancer, ExternalIP
+  ports:
+    {{- range .ports }}
+    - name: {{ .name }}
+      protocol: {{ .protocol }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      {{- if .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "helm-generic-chart.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+{{- end }}

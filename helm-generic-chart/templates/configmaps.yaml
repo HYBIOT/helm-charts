@@ -1,0 +1,15 @@
+{{ if  .Values.configMaps -}}
+{{ if  .Values.configMaps.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "helm-generic-chart.fullname" . }}       # deployment name (. mean local var)
+  labels:
+    {{- include "helm-generic-chart.labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.configMaps.data }}
+  {{ $key }}: |-
+{{ $value | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
